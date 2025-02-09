@@ -25,6 +25,25 @@ ChartJS.register(
 );
 
 const ChartLine = ({ dataSets, label, titleY, min }) => {
+  const colorChart = (label) => {
+    if (label == "Voltage Curve") {
+      return {
+        borderColor: "#FCB859",
+        backgroundColor: "#FCB8591F",
+      };
+    } else if (label == "Current Curve") {
+      return {
+        borderColor: "#A9DFD8",
+        backgroundColor: "#A9DFD81E",
+      };
+    } else {
+      return {
+        borderColor: "#F2C8ED",
+        backgroundColor: "#f2c8ed36",
+      };
+    }
+  };
+
   // X - axis lable
   const labels = [
     "09.00",
@@ -59,8 +78,9 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
         // Title of Graph
         label: `${label}`,
         data: dataSets,
-        fill: false,
-        borderColor: "rgb(75, 192, 192)",
+        fill: true,
+        borderColor: colorChart(label).borderColor,
+        backgroundColor: colorChart(label).backgroundColor,
         tension: 0.1,
       },
       // insert similar in dataset object for making multi line chart
@@ -73,17 +93,17 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
     maintainAspectRatio: false,
     plugins: {
       title: {
-        display: true, // ✅ เปิดใช้งาน Title
-        text: `${label}`, // ✅ ข้อความของหัวตาราง
+        display: true,
+        text: `${label}`,
         font: {
-          size: 18, // ✅ ขนาดตัวอักษร
-          weight: "bold", // ✅ ตัวหนา
+          size: 18,
+          weight: "bold",
         },
-        color: "#333", // ✅ สีข้อความ
-        padding: 20, // ✅ เพิ่ม padding รอบหัวตาราง
+        color: "#FFFFFF",
+        padding: 10,
       },
       legend: {
-        display: false, // ❌ ปิด Legend (กล่องสี + ข้อความ)
+        display: false,
       },
     },
     scales: {
@@ -91,6 +111,7 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
         title: {
           display: true,
           text: `${titleY}`,
+          color: "#FFFFFF",
         },
         display: true,
         min: min,
@@ -99,6 +120,7 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
         title: {
           display: true,
           text: "Time",
+          color: "#FFFFFF",
         },
         display: true,
       },
@@ -106,7 +128,7 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
   };
 
   return (
-    <div className="w-[400px] h-[250px] mx-auto">
+    <div className="w-[25rem] h-[15rem] bg-[#171821] px-2">
       <Line data={data} options={options} />
     </div>
   );

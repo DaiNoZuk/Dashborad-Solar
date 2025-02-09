@@ -16,7 +16,6 @@ const db = admin.firestore();
 export async function POST(req, res) {
     try {
         const body = await req.json();
-        console.log("Received Body:", body);
 
         // เช็คว่าข้อมูลที่ส่งมาต้องเป็น array
         if (!Array.isArray(body)) {
