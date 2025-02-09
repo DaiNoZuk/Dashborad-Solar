@@ -128,7 +128,7 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
   };
 
   return (
-    <div className="w-[25rem] h-[15rem] bg-[#171821] px-2">
+    <div className="w-[40rem] h-[20rem] bg-[#171821] px-2">
       <Line data={data} options={options} />
     </div>
   );

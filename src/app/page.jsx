@@ -4,15 +4,23 @@ import { useEffect, useState } from "react";
 import ChartLine from "./components/chartline";
 import { calculatePower } from "./utils/calculatePower";
 import CardContent from "./components/cardContent";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 export default function Home() {
   const [voltage, setVoltage] = useState([]);
   const [current, setCurrent] = useState([]);
   const [power, setPower] = useState([]);
+  const [report, setReport] = useState([]);
+  const [typeReport, setTypeReport] = useState("all");
 
   const valueLastIndex = (value) => {
     const lastValue = value.length > 0 ? value[value.length - 1] : 0;
     return lastValue;
+  };
+
+  const handleSelectChange = (event) => {
+    setTypeReport(event.target.value);
   };
 
   const filteredDate = (data) => {
@@ -39,44 +47,100 @@ export default function Home() {
     return sortedData;
   };
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "power_solar"), (snapshot) => {
-      const data = snapshot.docs.map((doc) => {
-        const docData = doc.data();
-      
-        // แปลง Firestore Timestamp เป็น Date object
-        const createDate = docData.create_date?.seconds
-          ? new Date(docData.create_date.seconds * 1000)
-          : null;
-      
+  const exportToExcel = () => {
+    const formattedData = report.map((item, index) => {
+      const [date, time] = item.create_date.split(" ");
+      if (typeReport == "all") {
         return {
-          id: doc.id,
-          i: docData.i,
-          v: docData.v,
-          create_date: createDate
-            ? createDate.toLocaleString("th-TH", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false, // ใช้เวลาแบบ 24 ชั่วโมง
-              }).replace(",", "") // ลบ "," ออกเพื่อให้เป็นรูปแบบที่ต้องการ
-            : "N/A",
+          ลำดับ: index + 1, // index+1
+          วันที่: date, // dd/mm/yyyy
+          เวลา: time, // hh:mm
+          Current: item.i, // ค่า i
+          Voltage: item.v, // ค่า v
+          Power: item.p, // ค่า p
         };
-      });
-      console.log(data);
-
-      const newData = filteredDate(data);
-      const newCurrent = newData.map((item) => item.i);
-      const newVoltage = newData.map((item) => item.v);
-
-      setCurrent(newCurrent);
-      setVoltage(newVoltage);
-      setPower(calculatePower(newVoltage, newCurrent));
+      } else if(typeReport == "current"){
+        return {
+          ลำดับ: index + 1, // index+1
+          วันที่: date, // dd/mm/yyyy
+          เวลา: time, // hh:mm
+          Current: item.i, // ค่า i
+        };
+      } else if(typeReport == "voltage"){
+        return {
+          ลำดับ: index + 1, // index+1
+          วันที่: date, // dd/mm/yyyy
+          เวลา: time, // hh:mm
+          Voltage: item.v, // ค่า v
+        };
+      }else{
+        return {
+          ลำดับ: index + 1, // index+1
+          วันที่: date, // dd/mm/yyyy
+          เวลา: time, // hh:mm
+          Power: item.p, // ค่า p
+        };
+      }
     });
+    
+    const ws = XLSX.utils.json_to_sheet(formattedData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Power Data");
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 
-    return () => unsubscribe(); 
+    const dataBlob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(dataBlob, "PowerData.xlsx");
+  };
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "power_solar"),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => {
+          const docData = doc.data();
+
+          // แปลง Firestore Timestamp เป็น Date object
+          const createDate = docData.create_date?.seconds
+            ? new Date(docData.create_date.seconds * 1000)
+            : null;
+
+          return {
+            id: doc.id,
+            i: docData.i,
+            v: docData.v,
+            create_date: createDate
+              ? createDate
+                  .toLocaleString("th-TH", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false, // ใช้เวลาแบบ 24 ชั่วโมง
+                  })
+                  .replace(",", "") // ลบ "," ออกเพื่อให้เป็นรูปแบบที่ต้องการ
+              : "N/A",
+          };
+        });
+
+        const newData = filteredDate(data);
+        const dataReport = newData.map((item) => ({
+          ...item,
+          p: Number((item.i * item.v).toFixed(2)),
+        }));
+        const newCurrent = newData.map((item) => item.i);
+        const newVoltage = newData.map((item) => item.v);
+
+        setReport(dataReport);
+        setCurrent(newCurrent);
+        setVoltage(newVoltage);
+        setPower(calculatePower(newVoltage, newCurrent));
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {}, [power]);
@@ -89,18 +153,25 @@ export default function Home() {
         </div>
         <div className="flex items-center justify-center px-4 py-2 text-center gap-3 rounded-lg bg-[#171821] text-[#FFFFFF]">
           <p>TypeReport : </p>
-          <select className="bg-[#171821] text-[#28AEF3] outline-none border-2 border-[#28AEF3] rounded-lg px-4">
-            <option>All</option>
-            <option>voltage</option>
-            <option>current</option>
-            <option>power</option>
+          <select
+            value={typeReport}
+            onChange={handleSelectChange}
+            className="bg-[#171821] text-[#28AEF3] outline-none border-2 border-[#28AEF3] rounded-lg px-4"
+          >
+            <option value="all">All</option>
+            <option value="voltage">Voltage</option>
+            <option value="current">Current</option>
+            <option value="power">Power</option>
           </select>
         </div>
-        <button className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]">
+        <button
+          onClick={exportToExcel}
+          className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
+        >
           <p>save</p>
         </button>
       </div>
-      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[40rem]">
+      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Votage"}
           value={`${valueLastIndex(voltage)} V`}
@@ -114,7 +185,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[40rem]">
+      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Current"}
           value={`${valueLastIndex(current)} mA`}
@@ -128,7 +199,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <div className="flex items-center justify-center  gap-10 p-6 bg-[#21222D] w-[40rem]">
+      <div className="flex items-center justify-center  gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Power"}
           value={`${valueLastIndex(power).toFixed(2)} W`}
