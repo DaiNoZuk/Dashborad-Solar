@@ -46,6 +46,12 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
 
   // X - axis lable
   const labels = [
+    "06.00",
+    "06.30",
+    "07.00",
+    "07.30",
+    "08.00",
+    "08.30",
     "09.00",
     "09.30",
     "10.00",
@@ -59,8 +65,6 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
     "14.00",
     "14.30",
     "15.00",
-    "14.30",
-    "15.00",
     "15.30",
     "16.00",
     "16.30",
@@ -71,13 +75,45 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
     "19.00",
   ];
 
+  // จัดเรียงข้อมูลให้ตรงกับ labels และไม่แสดงค่าที่ไม่มีข้อมูล
+  const mappedDataPower = labels.map((time) => {
+    const found = dataSets.find((item) => item.time === time);
+    return found ? `${found.p}` : null; // ถ้าไม่มีข้อมูล ให้เป็น null (ไม่แสดง)
+  });
+
+  const mappedDataCurrent = labels.map((time) => {
+    const found = dataSets.find((item) => item.time === time);
+    return found ? `${found.i}` : null; // ถ้าไม่มีข้อมูล ให้เป็น null (ไม่แสดง)
+  });
+
+  const mappedDataVoltage = labels.map((time) => {
+    const found = dataSets.find((item) => item.time === time);
+    return found ? `${found.v}` : null; // ถ้าไม่มีข้อมูล ให้เป็น null (ไม่แสดง)
+  });
+
+  const getMappedData = () => {
+    switch (label) {
+      case "Power Curve":
+        return mappedDataPower;
+      case "Current Curve":
+        return mappedDataCurrent;
+      case "Voltage Curve":
+        return mappedDataVoltage;
+      default:
+        return [];
+    }
+  };
+
+  // เรียกใช้ฟังก์ชันเพื่อเลือก dataset ที่ถูกต้อง
+  const selectedData = getMappedData();
+
   const data = {
     labels: labels,
     datasets: [
       {
         // Title of Graph
         label: `${label}`,
-        data: dataSets,
+        data: selectedData,
         fill: true,
         borderColor: colorChart(label).borderColor,
         backgroundColor: colorChart(label).backgroundColor,
@@ -128,7 +164,7 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
   };
 
   return (
-    <div className="w-[40rem] h-[20rem] bg-[#171821] px-2">
+    <div className="w-[44rem] h-[20rem] bg-[#171821] px-2">
       <Line data={data} options={options} />
     </div>
   );

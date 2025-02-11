@@ -6,6 +6,7 @@ import { calculatePower } from "./utils/calculatePower";
 import CardContent from "./components/cardContent";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import DialogAddData from "./components/DialogAddData";
 
 export default function Home() {
   const [voltage, setVoltage] = useState([]);
@@ -13,11 +14,8 @@ export default function Home() {
   const [power, setPower] = useState([]);
   const [report, setReport] = useState([]);
   const [typeReport, setTypeReport] = useState("all");
-
-  const valueLastIndex = (value) => {
-    const lastValue = value.length > 0 ? value[value.length - 1] : 0;
-    return lastValue;
-  };
+  const [openReport, setOpenReport] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const handleSelectChange = (event) => {
     setTypeReport(event.target.value);
@@ -59,21 +57,21 @@ export default function Home() {
           Voltage: item.v, // ค่า v
           Power: item.p, // ค่า p
         };
-      } else if(typeReport == "current"){
+      } else if (typeReport == "current") {
         return {
           ลำดับ: index + 1, // index+1
           วันที่: date, // dd/mm/yyyy
           เวลา: time, // hh:mm
           Current: item.i, // ค่า i
         };
-      } else if(typeReport == "voltage"){
+      } else if (typeReport == "voltage") {
         return {
           ลำดับ: index + 1, // index+1
           วันที่: date, // dd/mm/yyyy
           เวลา: time, // hh:mm
           Voltage: item.v, // ค่า v
         };
-      }else{
+      } else {
         return {
           ลำดับ: index + 1, // index+1
           วันที่: date, // dd/mm/yyyy
@@ -82,7 +80,7 @@ export default function Home() {
         };
       }
     });
-    
+
     const ws = XLSX.utils.json_to_sheet(formattedData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Power Data");
@@ -92,6 +90,7 @@ export default function Home() {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     saveAs(dataBlob, "PowerData.xlsx");
+    setOpenReport(false);
   };
 
   useEffect(() => {
@@ -122,6 +121,15 @@ export default function Home() {
                   })
                   .replace(",", "") // ลบ "," ออกเพื่อให้เป็นรูปแบบที่ต้องการ
               : "N/A",
+            time: createDate
+              ? createDate
+                  .toLocaleTimeString("th-TH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
+                  .replace(":", ".")
+              : "N/A",
           };
         });
 
@@ -130,8 +138,15 @@ export default function Home() {
           ...item,
           p: Number((item.i * item.v).toFixed(2)),
         }));
-        const newCurrent = newData.map((item) => item.i);
-        const newVoltage = newData.map((item) => item.v);
+        const newCurrent = newData.map((item) => ({
+          i: item.i,
+          time: item.time,
+        }));
+
+        const newVoltage = newData.map((item) => ({
+          v: item.v,
+          time: item.time,
+        }));
 
         setReport(dataReport);
         setCurrent(newCurrent);
@@ -143,38 +158,57 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {}, [power]);
+  useEffect(() => {
+  }, [power]);
 
   return (
     <div className="flex flex-col items-center justify-center w-screen gap-5 bg-[#171821] pb-20 pt-5">
-      <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[40rem]">
-        <div className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]">
-          <p>report</p>
-        </div>
-        <div className="flex items-center justify-center px-4 py-2 text-center gap-3 rounded-lg bg-[#171821] text-[#FFFFFF]">
-          <p>TypeReport : </p>
-          <select
-            value={typeReport}
-            onChange={handleSelectChange}
-            className="bg-[#171821] text-[#28AEF3] outline-none border-2 border-[#28AEF3] rounded-lg px-4"
-          >
-            <option value="all">All</option>
-            <option value="voltage">Voltage</option>
-            <option value="current">Current</option>
-            <option value="power">Power</option>
-          </select>
-        </div>
+      <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[20rem] rounded-md">
         <button
-          onClick={exportToExcel}
+          onClick={() => setOpenReport(!openReport)}
           className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
         >
-          <p>save</p>
+          <p>report</p>
+        </button>
+        <button
+          onClick={() => setOpenDialog(true)}
+          className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
+        >
+          <p>AddData</p>
         </button>
       </div>
+      {openReport ? (
+        <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[30rem] rounded-md">
+          <div className="flex items-center justify-center px-4 py-2 text-center gap-3 rounded-lg bg-[#171821] text-[#FFFFFF]">
+            <p>TypeReport : </p>
+            <select
+              value={typeReport}
+              onChange={handleSelectChange}
+              className="bg-[#171821] text-[#28AEF3] outline-none border-2 border-[#28AEF3] rounded-lg px-4"
+            >
+              <option value="all">All</option>
+              <option value="voltage">Voltage</option>
+              <option value="current">Current</option>
+              <option value="power">Power</option>
+            </select>
+          </div>
+          <button
+            onClick={exportToExcel}
+            className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
+          >
+            <p>save</p>
+          </button>
+        </div>
+      ) : null}
+      {/* Dialog Component */}
+      <DialogAddData open={openDialog} onClose={() => setOpenDialog(false)} />
+
       <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Votage"}
-          value={`${valueLastIndex(voltage)} V`}
+          value={
+            voltage.length > 0 ? `${voltage[voltage.length - 1].v} V` : "N/A"
+          }
           style={"bg-[#FCB8591E] border-[1px] border-[#FCB859] text-[#FCB859]"}
         />
         <div className="">
@@ -188,7 +222,9 @@ export default function Home() {
       <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Current"}
-          value={`${valueLastIndex(current)} mA`}
+          value={
+            current.length > 0 ? `${current[current.length - 1].i} mA` : "N/A"
+          }
           style={"bg-[#A9DFD81E] border-[1px] border-[#A9DFD8] text-[#A9DFD8]"}
         />
         <div className="">
@@ -202,7 +238,7 @@ export default function Home() {
       <div className="flex items-center justify-center  gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent
           label={"Power"}
-          value={`${valueLastIndex(power).toFixed(2)} W`}
+          value={power.length > 0 ? `${power[power.length - 1].p} W` : "N/A"}
           style={"bg-[#f2c8ed36] border-[1px] border-[#F2C8ED] text-[#F2C8ED]"}
         />
         <div className="">
