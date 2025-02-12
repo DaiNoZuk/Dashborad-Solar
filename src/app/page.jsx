@@ -7,6 +7,7 @@ import CardContent from "./components/cardContent";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import DialogAddData from "./components/DialogAddData";
+import DialogViweData from "./components/DailogViweData";
 
 export default function Home() {
   const [voltage, setVoltage] = useState([]);
@@ -16,6 +17,7 @@ export default function Home() {
   const [typeReport, setTypeReport] = useState("all");
   const [openReport, setOpenReport] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openViweData, setOpenViweData] = useState(false);
 
   const handleSelectChange = (event) => {
     setTypeReport(event.target.value);
@@ -163,7 +165,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center w-screen gap-5 bg-[#171821] pb-20 pt-5">
-      <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[20rem] rounded-md">
+      <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[25rem] rounded-md">
         <button
           onClick={() => setOpenReport(!openReport)}
           className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
@@ -175,6 +177,12 @@ export default function Home() {
           className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
         >
           <p>AddData</p>
+        </button>
+        <button
+          onClick={() => setOpenViweData(true)}
+          className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
+        >
+          <p>ViweData</p>
         </button>
       </div>
       {openReport ? (
@@ -202,6 +210,8 @@ export default function Home() {
       ) : null}
       {/* Dialog Component */}
       <DialogAddData open={openDialog} onClose={() => setOpenDialog(false)} />
+
+      <DialogViweData open={openViweData} onClose={() => setOpenViweData(false)} data={report}/>
 
       <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
         <CardContent

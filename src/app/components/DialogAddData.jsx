@@ -72,6 +72,8 @@ const DialogAddData = ({ open, onClose }) => {
       await addDoc(collection(db, "power_solar"), data);
     } catch (error) {
       console.error("Error adding data:", error);
+    } finally{
+      onClose();
     }
   };
 
