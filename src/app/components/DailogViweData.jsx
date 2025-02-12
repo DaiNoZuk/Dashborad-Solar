@@ -66,7 +66,7 @@ const DialogViweData = ({ open, onClose, data }) => {
                       {(item.i * item.v).toFixed(2)} W
                     </td>
                     <td className="p-2 border border-gray-600">
-                      {item.create_date}
+                      {item.create_date.split(" ")[0]}
                     </td>
                     <td className="p-2 border border-gray-600">{item.time}</td>
                     <td className="p-2 border border-gray-600">
