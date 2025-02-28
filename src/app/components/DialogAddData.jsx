@@ -86,7 +86,6 @@ const DialogAddData = ({ open, onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-[#21222D] p-6 rounded-lg w-[18rem] sm:w-[22rem] text-white shadow-lg">
         <h2 className="text-lg font-semibold mb-4">Add New Data</h2>
-
         <div className="flex flex-col gap-4">
           <label>
             Current (I):
