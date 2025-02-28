@@ -109,8 +109,8 @@ export default function Home() {
 
           return {
             id: doc.id,
-            i: docData.i,
-            v: docData.v,
+            i: docData.I,
+            v: docData.V,
             create_date: createDate
               ? createDate
                   .toLocaleString("th-TH", {
@@ -136,6 +136,7 @@ export default function Home() {
         });
 
         const newData = filteredDate(data);
+
         const dataReport = newData.map((item) => ({
           ...item,
           p: Number((item.i * item.v).toFixed(2)),
@@ -149,6 +150,7 @@ export default function Home() {
           v: item.v,
           time: item.time,
         }));
+        console.log(newVoltage);
 
         setReport(dataReport);
         setCurrent(newCurrent);
@@ -160,12 +162,11 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-  }, [power]);
+  useEffect(() => {}, [power]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-screen gap-5 bg-[#171821] pb-20 pt-5">
-      <div className="flex items-center justify-center gap-10 p-2 bg-[#21222D] w-[25rem] rounded-md">
+    <div className="flex flex-col items-center justify-center w-screen min-h-screen gap-5 bg-[#171821] pb-20 pt-5">
+      <div className="flex items-center justify-center gap-4 p-4 bg-[#21222D] rounded-2xl sm:w-[25rem] sm:gap-10 sm:p-2 sm:rounded-md">
         <button
           onClick={() => setOpenReport(!openReport)}
           className="px-4 py-2 text-center  rounded-lg bg-[#171821] text-[#FFFFFF]"
@@ -211,52 +212,59 @@ export default function Home() {
       {/* Dialog Component */}
       <DialogAddData open={openDialog} onClose={() => setOpenDialog(false)} />
 
-      <DialogViweData open={openViweData} onClose={() => setOpenViweData(false)} data={report}/>
-
-      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
-        <CardContent
-          label={"Votage"}
-          value={
-            voltage.length > 0 ? `${voltage[voltage.length - 1].v} V` : "N/A"
-          }
-          style={"bg-[#FCB8591E] border-[1px] border-[#FCB859] text-[#FCB859]"}
-        />
-        <div className="">
-          <ChartLine
-            dataSets={voltage}
-            label={"Voltage Curve"}
-            titleY={"Voltage (V)"}
+      <DialogViweData
+        open={openViweData}
+        onClose={() => setOpenViweData(false)}
+        data={report}
+      />
+      <div className="flex flex-col lg:flex-row">
+        <div className="flex flex-col items-center justify-center gap-4 p-6 bg-[#21222D] sm:gap-10 sm:w-[30rem]">
+          <CardContent
+            label={"Voltage"}
+            data={voltage}
+            style={
+              "bg-[#FCB8591E] border-[1px] border-[#FCB859] text-[#FCB859]"
+            }
           />
+          <div className="">
+            <ChartLine
+              dataSets={voltage}
+              label={"Voltage Curve"}
+              titleY={"Voltage (V)"}
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex items-center justify-center gap-10 p-6 bg-[#21222D] w-[60rem]">
-        <CardContent
-          label={"Current"}
-          value={
-            current.length > 0 ? `${current[current.length - 1].i} mA` : "N/A"
-          }
-          style={"bg-[#A9DFD81E] border-[1px] border-[#A9DFD8] text-[#A9DFD8]"}
-        />
-        <div className="">
-          <ChartLine
-            dataSets={current}
-            label={"Current Curve"}
-            titleY={"Current (mA)"}
+        <div className="flex flex-col items-center justify-center gap-4 p-6 bg-[#21222D] sm:gap-10 sm:w-[30rem]">
+          <CardContent
+            label={"Current"}
+            data={current}
+            style={
+              "bg-[#A9DFD81E] border-[1px] border-[#A9DFD8] text-[#A9DFD8]"
+            }
           />
+          <div className="">
+            <ChartLine
+              dataSets={current}
+              label={"Current Curve"}
+              titleY={"Current (mA)"}
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex items-center justify-center  gap-10 p-6 bg-[#21222D] w-[60rem]">
-        <CardContent
-          label={"Power"}
-          value={power.length > 0 ? `${power[power.length - 1].p} W` : "N/A"}
-          style={"bg-[#f2c8ed36] border-[1px] border-[#F2C8ED] text-[#F2C8ED]"}
-        />
-        <div className="">
-          <ChartLine
-            dataSets={power}
-            label={"Power Curve"}
-            titleY={"Power (W)"}
+        <div className="flex flex-col items-center justify-center gap-4 p-6 bg-[#21222D] sm:gap-10 sm:w-[30rem]">
+          <CardContent
+            label={"Power"}
+            data={power}
+            style={
+              "bg-[#f2c8ed36] border-[1px] border-[#F2C8ED] text-[#F2C8ED]"
+            }
           />
+          <div className="">
+            <ChartLine
+              dataSets={power}
+              label={"Power Curve"}
+              titleY={"Power (W)"}
+            />
+          </div>
         </div>
       </div>
     </div>

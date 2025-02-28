@@ -5,10 +5,11 @@ const DialogAddData = ({ open, onClose }) => {
   const [current, setCurrent] = useState("");
   const [voltage, setVoltage] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState("--.--");
   if (!open) return null; // ถ้า Dialog ไม่เปิด ให้ return null
 
   const time = [
+    "--.--",
     "06:00",
     "06:30",
     "07:00",
@@ -50,36 +51,40 @@ const DialogAddData = ({ open, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    try {
-      // ตรวจสอบว่ามีค่าหรือไม่
-      if (!selectedDate || !selectedTime) {
-        console.error("Error: Date or Time is missing");
-        return;
+    if (selectedTime == "--.--") {
+      return null;
+    } else {
+      try {
+        // ตรวจสอบว่ามีค่าหรือไม่
+        if (!selectedDate || !selectedTime || selectedTime == "--.--") {
+          console.error("Error: Date or Time is missing");
+          return;
+        }
+
+        const dateObject = combineDateTime(selectedDate, selectedTime);
+
+        if (!dateObject) {
+          console.error("Error: Invalid DateTime");
+          return;
+        }
+
+        const data = {
+          I: Number(current),
+          V: Number(voltage),
+          create_date: Timestamp.fromDate(dateObject), // แปลงเป็น Firestore Timestamp
+        };
+        await addDoc(collection(db, "power_solar"), data);
+      } catch (error) {
+        console.error("Error adding data:", error);
+      } finally {
+        onClose();
       }
-
-      const dateObject = combineDateTime(selectedDate, selectedTime);
-
-      if (!dateObject) {
-        console.error("Error: Invalid DateTime");
-        return;
-      }
-
-      const data = {
-        i: Number(current),
-        v: Number(voltage),
-        create_date: Timestamp.fromDate(dateObject), // แปลงเป็น Firestore Timestamp
-      };
-      await addDoc(collection(db, "power_solar"), data);
-    } catch (error) {
-      console.error("Error adding data:", error);
-    } finally{
-      onClose();
     }
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-[#21222D] p-6 rounded-lg w-[22rem] text-white shadow-lg">
+      <div className="bg-[#21222D] p-6 rounded-lg w-[18rem] sm:w-[22rem] text-white shadow-lg">
         <h2 className="text-lg font-semibold mb-4">Add New Data</h2>
 
         <div className="flex flex-col gap-4">
@@ -127,7 +132,10 @@ const DialogAddData = ({ open, onClose }) => {
             Time:
             <select
               className="bg-[#171821] text-[#28AEF3] outline-none border-2 border-[#28AEF3] rounded-lg px-4 ml-4"
-              onChange={(e) => setSelectedTime(e.target.value)}
+              onChange={(e) => {
+                setSelectedTime(e.target.value);
+                console.log(e.target.value);
+              }}
             >
               {time.map((time, index) => (
                 <option key={index} value={time}>
@@ -138,7 +146,7 @@ const DialogAddData = ({ open, onClose }) => {
           </label>
         </div>
 
-        <div className="flex justify-end gap-4 mt-6">
+        <div className={` flex justify-end gap-4 mt-6`}>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-gray-600 rounded-md"
@@ -147,7 +155,11 @@ const DialogAddData = ({ open, onClose }) => {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-blue-500 rounded-md"
+            className={`${
+              selectedTime == "--.--"
+                ? "bg-gray-600 cursor-default"
+                : "bg-blue-500"
+            } px-4 py-2  rounded-md`}
           >
             Submit
           </button>
