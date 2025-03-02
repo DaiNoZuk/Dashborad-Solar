@@ -139,7 +139,7 @@ export default function Home() {
 
         const dataReport = newData.map((item) => ({
           ...item,
-          p: Number((item.i * item.v).toFixed(2)),
+          p: Number((item.i * item.v)/1000).toFixed(2),
         }));
         const newCurrent = newData.map((item) => ({
           i: item.i,
