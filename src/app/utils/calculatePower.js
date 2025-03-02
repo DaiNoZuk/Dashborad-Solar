@@ -7,7 +7,7 @@ export const calculatePower = (voltage, current) => {
       // ถ้ามีกระแสที่ตรงกับเวลาให้คำนวณกำลังไฟฟ้า
       if (matchingCurrent) {
         return {
-          p: Number((vItem.v * matchingCurrent.i).toFixed(2)), // คำนวณกำลังไฟฟ้า
+          p: Number((vItem.v * matchingCurrent.i)/1000).toFixed(2), // คำนวณกำลังไฟฟ้า
           time: vItem.time, // ใช้เวลาเดียวกัน
         };
       }
