@@ -46,8 +46,6 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
 
   // X - axis lable
   const labels = [
-    "06.00",
-    "06.30",
     "07.00",
     "07.30",
     "08.00",
@@ -69,10 +67,6 @@ const ChartLine = ({ dataSets, label, titleY, min }) => {
     "16.00",
     "16.30",
     "17.00",
-    "17.30",
-    "18.00",
-    "18.30",
-    "19.00",
   ];
 
   // จัดเรียงข้อมูลให้ตรงกับ labels และไม่แสดงค่าที่ไม่มีข้อมูล

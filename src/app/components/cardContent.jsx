@@ -2,8 +2,6 @@ import React from "react";
 
 function CardContent({ label, data, style }) {
   const fixedtime = [
-    "06.00",
-    "06.30",
     "07.00",
     "07.30",
     "08.00",
@@ -25,10 +23,6 @@ function CardContent({ label, data, style }) {
     "16.00",
     "16.30",
     "17.00",
-    "17.30",
-    "18.00",
-    "18.30",
-    "19.00",
   ];
 
   // จัดเรียงข้อมูลให้ตรงกับ labels และไม่แสดงค่าที่ไม่มีข้อมูล
